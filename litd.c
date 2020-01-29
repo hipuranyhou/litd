@@ -1,3 +1,5 @@
+// Hipuranyhou - litd - ver 0.1 - 29.01.2020
+
 #include <stdio.h>
 #include <time.h>
 #include <signal.h>
@@ -12,6 +14,7 @@
 #define KEY_MAX 255
 #define POLL 400
 #define IDLE 5000
+#define RESET_MAN 3600000
 
 void handle_signal(int sig) {
     // Exit after every prepared signal
@@ -72,7 +75,7 @@ int calc_key_val(int sens_val) {
 
 int main(void) {
     // Prepare all values on start
-    int disp_val_last, disp_man = 0, key_val_last, key_man = 0, sens_val, idle;
+    int disp_val_last, disp_man = 0, key_val_last, key_man = 0, sens_val, idle, reset = 0;
     int disp_val = get_file_value(DISP_PATH, "%d");
     int key_val = get_file_value(KEY_PATH, "%d");
     disp_val_last = disp_val;
@@ -83,16 +86,27 @@ int main(void) {
     while (1) {
         // Get values every POLL milliseconds
         idle = get_user_idle_time();
+        reset += POLL;
         disp_val = get_file_value(DISP_PATH, "%d");
         key_val = get_file_value(KEY_PATH, "%d");
         sens_val = get_file_value(SENS_PATH, "(%d,");
+        // Reset manual mode after RESET_MAN milliseconds
+        if (reset - POLL > RESET_MAN) {
+            disp_val = get_file_value(DISP_PATH, "%d");
+            key_val = get_file_value(KEY_PATH, "%d");
+            disp_val_last = disp_val;
+            key_val_last = key_val;
+            reset = 0;
+            disp_man = 0;
+            key_man = 0;
+        }
         // Ignore sensor for keyboard or display or both if user changes brightness manually
         if (disp_val_last != disp_val) {
             disp_val_last = disp_val;
             disp_man = 1;
         }
         if (key_val_last != key_val) {
-            key_val_last = key_val;
+            key_val_last = (key_val == 0) ? key_val_last : key_val;
             key_man = 1;
         }
         if (disp_man && key_man) {
@@ -123,6 +137,7 @@ int main(void) {
         printf("Display: %d\n", disp_val);
         printf("Keyboard: %d\n", key_val);
         printf("Idle: %d\n", idle);
+        printf("Reset: %d\n", reset);
         printf("Sensor: %d\n", sens_val);
         printf("Disp_man: %d Key_man: %d\n", disp_man, key_man);
         nsleep(POLL);
