@@ -8,6 +8,7 @@ int get_user_idle_time(void) {
     if (!display) return -1;
     XScreenSaverInfo *info = XScreenSaverAllocInfo();
     XScreenSaverQueryInfo(display, DefaultRootWindow(display), info);
+    XCloseDisplay(display);
     return info->idle;
 }
 
