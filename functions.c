@@ -1,9 +1,32 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <time.h>
 #include "functions.h"
 
 #define DISP_MAX 1953
 #define KEY_MAX 255
+
+int process_options(int argc, char **argv, int *daemon, int *verbose) {
+    int opt;
+    // Process command line options
+    while ((opt = getopt(argc, argv, ":dv")) != -1) {
+        switch (opt) {
+            // Daemonize
+            case 'd':
+                *daemon = 1;
+                break;
+                // Verbose
+            case 'v':
+                *verbose = 1;
+                break;
+                // Unknown option
+            case '?':
+                fprintf(stderr, "Unknown option!\n");
+                return 0;
+        }
+    }
+    return 1;
+}
 
 void nsleep(int milisec) {
     // Helper function for nanosleep()
@@ -43,7 +66,7 @@ int calc_disp_val(int sens_val) {
 }
 
 int calc_key_val(int sens_val) {
-    // Calculates new keyboard brightness value based on sensor value in range 15 - KEY_MAX
+    // Calculates new keyboard brightness value based on sensor value in range 25 - KEY_MAX
     if (sens_val < 30)
         return 25;
     if (sens_val > 225)
@@ -52,6 +75,7 @@ int calc_key_val(int sens_val) {
 }
 
 void print_info(int disp_val, int key_val, int idle, int reset, int sens_val, int disp_man, int key_man) {
+    // Prints all info to stdout in verbose mode
     printf("Display: %d\n", disp_val);
     printf("Keyboard: %d\n", key_val);
     printf("Idle: %d\n", idle);
@@ -61,4 +85,3 @@ void print_info(int disp_val, int key_val, int idle, int reset, int sens_val, in
     printf("\n");
     return;
 }
-

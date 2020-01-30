@@ -1,6 +1,7 @@
-#ifndef LITD_FUNCTIONS_H
-#define LITD_FUNCTIONS_H
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
 
+int process_options(int argc, char **argv, int *daemon, int *verbose);
 void nsleep(int milisec);
 int get_file_value(const char *path, const char *search);
 void write_file_value(const char *path, int value);
