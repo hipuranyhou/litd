@@ -61,4 +61,3 @@ void print_info(int disp_val, int key_val, int idle, int reset, int sens_val, in
     printf("\n");
     return;
 }
-
