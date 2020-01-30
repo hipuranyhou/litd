@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <X11/extensions/scrnsaver.h>
+#include "xidle.h"
 
 int get_user_idle_time(void) {
     Display *display = XOpenDisplay(0);
