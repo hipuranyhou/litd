@@ -1,7 +1,6 @@
 /*
 * daemonize.c
-* This example daemonizes a process, writes a few log messages,
-* sleeps 20 seconds and terminates afterwards.
+* This example daemonizes a process.
 * This is an answer to the stackoverflow question:
 * https://stackoverflow.com/questions/17954432/creating-a-daemon-in-linux/17955149#17955149
 * Fork this code: https://github.com/pasce/daemon-skeleton-linux-c
@@ -76,7 +75,7 @@ void daemonize(void) {
         close(fd);
 
     /* Try to write PID of daemon to lockfile */
-    write_file_value("/home/hipuranyhou/.config/litd/litd.pid", (int)getpid());
+    write_file_value("/home/hipuranyhou/.litd.pid", (int)getpid());
 
     return;
 }

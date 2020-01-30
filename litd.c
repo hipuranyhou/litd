@@ -22,11 +22,15 @@ int main(int argc, char **argv) {
     disp_val_last = disp_val;
     key_val_last = key_val;
 
+    // Check if we are not root
+    if(!check_user())
+        return 1;
+
     // Process command line options
     if (!process_options(argc, argv, &daemon, &verbose))
         return 1;
 
-    // Daemonize
+    // Daemonize litd
     if (daemon)
         daemonize();
 

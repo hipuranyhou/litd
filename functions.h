@@ -1,6 +1,7 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
+int check_user(void);
 int process_options(int argc, char **argv, int *daemon, int *verbose);
 void nsleep(int milisec);
 int get_file_value(const char *path, const char *search);

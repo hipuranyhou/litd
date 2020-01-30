@@ -6,6 +6,16 @@
 #define DISP_MAX 1953
 #define KEY_MAX 255
 
+int check_user(void) {
+    uid_t uid = getuid();
+    if (uid != 0)
+        return 1;
+    else {
+        fprintf(stderr, "Running as root not allowed!\n");
+        return 0;
+    }
+}
+
 int process_options(int argc, char **argv, int *daemon, int *verbose) {
     int opt;
     // Process command line options
