@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./home/hipuranyhou/Code/litd/bin/litd -d
+/home/hipuranyhou/Code/litd/bin/./litd -d
