@@ -34,9 +34,9 @@ Reboot and check that everything works.
 
 ### Signals
 litd ignores sensor data for RESET_MAN (`litd.c` - top) if you adjust brightness manually. It does this seperately for keyboard and display. You can reset this manually by sending `SIGUSR1` to litd.
-```
-kill -SIGUSR1 <pre><i>litd_pid</i></pre>
-```  
+<pre>
+kill -SIGUSR1 <i>litd_pid</i>
+</pre>
 
 ### Debug
 
