@@ -20,16 +20,23 @@ sudo systemctl enable --now brightness-perm.service
 
 Then make sure you have `r` permission on light sensor file `/sys/devices/platform/applesmc.768/light` (you should have it by deafult.)
 
-After this edit where will litd create its `litd.pid` file (`daemonize.c` - at the end.)
+After this edit where will litd create its `litd.pid` file (`daemonize.c` - bottom.)
 
 Next edit `bin/litd-autostart` to point to your install directory, add `x` permission and autostart it at boot. **Make sure you keep the `-d` option in your path.** 
 
 ### Compilation 
+Finally, compile `litd` into `bin/` directory.
 ```Shell
 g++ litd.c xidle.c daemonize.c functions.c -lXss -lX11 -o bin/litd
 ```
 
 Reboot and check that everything works.
+
+### Signals
+litd ignores sensor data for RESET_MAN (`litd.c` - top) if you adjust brightness manually. It does this seperately for keyboard and display. You can reset this manually by sending `SIGUSR1` to litd.
+```
+kill -SIGUSR1 <pre><i>litd_pid</i></pre>
+```  
 
 ### Debug
 
