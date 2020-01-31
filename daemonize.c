@@ -7,7 +7,6 @@
 * Read about it: https://nullraum.net/how-to-create-a-daemon-in-c/
 */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>

@@ -1,6 +1,5 @@
 // https://github.com/gpolitis/xidle
 
-#include <stdio.h>
 #include <X11/extensions/scrnsaver.h>
 #include "xidle.h"
 
