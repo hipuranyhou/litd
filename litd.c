@@ -1,5 +1,7 @@
 // Hipuranyhou - litd - ver 0.2 - 30.01.2020
 
+#include <signal.h>
+#include <syslog.h>
 #include "xidle.h"
 #include "daemonize.h"
 #include "functions.h"
@@ -11,6 +13,13 @@
 #define POLL 400
 #define IDLE 5000
 #define RESET_MAN 3600000
+
+static volatile int reset_man = 0;
+
+void set_reset_man(int sig) {
+    reset_man = 1;
+    return;
+}
 
 int main(int argc, char **argv) {
 
@@ -31,8 +40,11 @@ int main(int argc, char **argv) {
         return 1;
 
     // Daemonize litd
-    if (daemon)
+    if (daemon) {
         daemonize();
+        syslog (LOG_NOTICE, "Started.");
+        signal(SIGUSR1, set_reset_man);
+    }
 
     // Main brightness controlling loop
     while (1) {
@@ -43,6 +55,14 @@ int main(int argc, char **argv) {
         disp_val = get_file_value(DISP_PATH, "%d");
         key_val = get_file_value(KEY_PATH, "%d");
         sens_val = get_file_value(SENS_PATH, "(%d,");
+
+        // Reset manual mode if SIGUSR1 received
+        if (reset_man) {
+            disp_man = 0;
+            key_man = 0;
+            reset_man = 0;
+            syslog(LOG_NOTICE, "Manual mode resetted.");
+        }
 
         // Reset manual mode after RESET_MAN milliseconds
         if (reset - POLL > RESET_MAN) {
