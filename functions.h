@@ -1,3 +1,5 @@
+// Hipuranyhou - litd - ver 0.2 - 30.01.2020
+
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 

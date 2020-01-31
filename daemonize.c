@@ -77,7 +77,7 @@ void daemonize(void) {
         close(fd);
 
     // Write PID of daemon to .pid file
-    write_file_value("/home/hipuranyhou/.litd.pid", (int)getpid());
+    write_file_value("/home/hipuranyhou/litd.pid", (int)getpid());
 
     // Open the log file
     openlog ("litd", LOG_PID, LOG_DAEMON);

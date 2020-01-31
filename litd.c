@@ -1,18 +1,16 @@
 // Hipuranyhou - litd - ver 0.2 - 30.01.2020
 
+#include <stdio.h>
 #include <signal.h>
 #include <syslog.h>
 #include "xidle.h"
 #include "daemonize.h"
 #include "functions.h"
+#include "config.h"
 
 #define SENS_PATH "/sys/devices/platform/applesmc.768/light"
 #define DISP_PATH "/sys/class/backlight/intel_backlight/brightness"
 #define KEY_PATH "/sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/brightness"
-
-#define POLL 400
-#define IDLE 5000
-#define RESET_MAN 3600000
 
 static volatile int reset_man = 0;
 
@@ -23,9 +21,15 @@ void set_reset_man(int sig) {
 
 int main(int argc, char **argv) {
 
+    // Generate and read config
+    // TODO: generate config only if it does not exist
+    CONFIG config;
+    generate_config_file("/home/hipuranyhou/litd.conf");
+    read_config_file("/home/hipuranyhou/litd.conf", &config);
+
     // Prepare all values on start
     int disp_val_last,  key_val_last,  sens_val, idle;
-    int disp_man = 0, key_man = 0, reset = 0, daemon = 0, verbose = 0;
+    int disp_man = 0, key_man = 0, reset_time = 0, daemon = 0, verbose = 0;
     int disp_val = get_file_value(DISP_PATH, "%d");
     int key_val = get_file_value(KEY_PATH, "%d");
     disp_val_last = disp_val;
@@ -51,7 +55,7 @@ int main(int argc, char **argv) {
 
         // Get values every POLL milliseconds
         idle = get_user_idle_time();
-        reset += POLL;
+        reset_time += config.poll;
         disp_val = get_file_value(DISP_PATH, "%d");
         key_val = get_file_value(KEY_PATH, "%d");
         sens_val = get_file_value(SENS_PATH, "(%d,");
@@ -65,10 +69,10 @@ int main(int argc, char **argv) {
         }
 
         // Reset manual mode after RESET_MAN milliseconds
-        if (reset - POLL > RESET_MAN) {
+        if (reset_time - config.poll > config.reset) {
             disp_val_last = disp_val;
             key_val_last = key_val;
-            reset = 0;
+            reset_time = 0;
             disp_man = 0;
             key_man = 0;
         }
@@ -90,7 +94,7 @@ int main(int argc, char **argv) {
         key_val_last = key_val;
 
         // Turn off keyboard after IDLE milliseconds
-        if (idle > IDLE)
+        if (idle > config.idle)
             key_val = 0;
 
         // Adjust values in brightness files
@@ -99,10 +103,10 @@ int main(int argc, char **argv) {
 
         // Print debug info when not in daemon mode (-v flag)
         if (verbose && !daemon)
-            print_info(disp_val, key_val, idle, reset, sens_val, disp_man, key_man);
+            print_info(disp_val, key_val, idle, reset_time, sens_val, disp_man, key_man);
 
         // Wait for POLL millisecond
-        nsleep(POLL);
+        nsleep(config.poll);
 
     }
 

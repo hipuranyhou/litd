@@ -1,3 +1,5 @@
+// Hipuranyhou - litd - ver 0.2 - 30.01.2020
+
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
