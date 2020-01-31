@@ -15,15 +15,15 @@ int generate_config_file(const char *path) {
     fputs("########################################\n", fp);
     fputs("\n", fp);
     fputs("# Poll time in milliseconds (how often should litd check for user inactivity.)\n", fp);
-    fputs("# Default poll = 400\n", fp);
+    fputs("# default: 400\n", fp);
     fputs("poll = 400\n", fp);
     fputs("\n", fp);
     fputs("# Idle time in seconds (after how long should keyboard turn off.)\n", fp);
-    fputs("# Default idle = 5 (0 for off)\n", fp);
+    fputs("# default: 5 (0 for off)\n", fp);
     fputs("idle = 5\n", fp);
     fputs("\n", fp);
     fputs("# Idle time in seconds (after how long should keyboard turn off.)\n", fp);
-    fputs("# Default reset = 3600 (0 for off)\n", fp);
+    fputs("# default: 3600 (0 for off)\n", fp);
     fputs("reset = 3600\n", fp);
     fclose(fp);
     return 1;
@@ -33,21 +33,23 @@ int read_config_file(const char *path, CONFIG *config) {
 
     FILE *fp = NULL;
     char buffer[256] = {0}, *line = NULL;
-    int value = 0;
+    int value = 0, line_cnt = 0;
     size_t len = 0;
 
     fp = fopen(path, "r");
 
     while (getline(&line, &len, fp) && !feof(fp)) {
 
+        line_cnt += 1;
+
         // Ignore comments and empty lines;
         if (line[0] == '#' || line[0] == '\n')
             continue;
 
-        // Get value from config line
+        // Get 1 value from config line
         if (sscanf(line, "%255s = %d", buffer, &value) != 2) {
             free(line);
-            return 0;
+            return line_cnt;
         }
 
         // Assign proper config value
@@ -62,6 +64,6 @@ int read_config_file(const char *path, CONFIG *config) {
 
     free(line);
     fclose(fp);
-    return 1;
+    return 0;
 
 }

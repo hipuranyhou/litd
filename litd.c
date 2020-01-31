@@ -21,11 +21,16 @@ void set_reset_man(int sig) {
 
 int main(int argc, char **argv) {
 
+    int err = 0;
+
     // Generate and read config
     // TODO: generate config only if it does not exist
     CONFIG config;
     generate_config_file("/home/hipuranyhou/litd.conf");
-    read_config_file("/home/hipuranyhou/litd.conf", &config);
+    if ((err = read_config_file("/home/hipuranyhou/litd.conf", &config)) != 0) {
+        fprintf(stderr, "Error reading config file. Line %d\n", err);
+        return 1;
+    }
 
     // Prepare all values on start
     int disp_val_last,  key_val_last,  sens_val, idle;
@@ -48,11 +53,12 @@ int main(int argc, char **argv) {
         daemonize();
         syslog (LOG_NOTICE, "Started.");
         signal(SIGUSR1, set_reset_man);
+        // TODO: reload config SIGHUP
     }
 
     // Main brightness controlling loop
     while (1) {
-
+        // TODO: 0 for off idle and reset
         // Get values every POLL milliseconds
         idle = get_user_idle_time();
         reset_time += config.poll;

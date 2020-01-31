@@ -63,7 +63,7 @@ void write_file_value(const char *path, int value) {
     // Writes new brightness value into file
     FILE *fp = NULL;
     fp = fopen(path, "w+");
-    fprintf(fp, "%d", value);
+    fprintf(fp, "%d\n", value);
     fclose(fp);
     return;
 }
