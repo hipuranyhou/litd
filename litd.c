@@ -3,118 +3,77 @@
 #include <stdio.h>
 #include <signal.h>
 #include <syslog.h>
-#include "xidle.h"
-#include "daemonize.h"
-#include "functions.h"
 #include "config.h"
+#include "daemonize.h"
+#include "control.h"
 
-#define SENS_PATH "/sys/devices/platform/applesmc.768/light"
-#define DISP_PATH "/sys/class/backlight/intel_backlight/brightness"
-#define KEY_PATH "/sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/brightness"
+extern volatile int reset_man;
+extern volatile int reload_config;
 
-static volatile int reset_man = 0;
-
-void set_reset_man(int sig) {
+void set_reset_manual(int sig) {
     reset_man = 1;
+    return;
+}
+
+void set_reload_config(int sig) {
+    // TODO: SIGHUP reload config
+    reload_config = 1;
     return;
 }
 
 int main(int argc, char **argv) {
 
+    CONFIG config;
+    config.daemon = 0;
+    config.verbose = 0;
     int err = 0;
 
-    // Generate and read config
+    // Generate config file
     // TODO: generate config only if it does not exist
-    CONFIG config;
-    generate_config_file("/home/hipuranyhou/litd.conf");
-    if ((err = read_config_file("/home/hipuranyhou/litd.conf", &config)) != 0) {
-        fprintf(stderr, "Error reading config file. Line %d\n", err);
-        return 1;
+    if ((err = generate_config_file("/home/hipuranyhou/litd.conf")) != 0) {
+        switch (err) {
+            case 1:
+                fprintf(stderr, "Error while generating config file.\n");
+                fprintf(stderr, "Cannot open config file.\n");
+                return 1;
+        }
     }
 
-    // Prepare all values on start
-    int disp_val_last,  key_val_last,  sens_val, idle;
-    int disp_man = 0, key_man = 0, reset_time = 0, daemon = 0, verbose = 0;
-    int disp_val = get_file_value(DISP_PATH, "%d");
-    int key_val = get_file_value(KEY_PATH, "%d");
-    disp_val_last = disp_val;
-    key_val_last = key_val;
+    // Read config file
+    if ((err = read_config_file("/home/hipuranyhou/litd.conf", &config)) != 0) {
+        switch (err) {
+            case -1:
+                fprintf(stderr, "Error reading config file. Line %d\n", err);
+                return 1;
+            default:
+                fprintf(stderr, "Error reading config file. Line %d\n", err);
+                return 1;
+        }
+    }
 
     // Check if we are not root
-    if(!check_user())
+    if(!check_root()) {
+        fprintf(stderr, "Running as root not allowed!\n");
         return 1;
+    }
 
     // Process command line options
-    if (!process_options(argc, argv, &daemon, &verbose))
+    if (!process_options(argc, argv, &config)) {
+        fprintf(stderr, "Unknown option!\n");
         return 1;
+    }
 
     // Daemonize litd
-    if (daemon) {
+    if (config.daemon) {
         daemonize();
         syslog (LOG_NOTICE, "Started.");
-        signal(SIGUSR1, set_reset_man);
-        // TODO: reload config SIGHUP
+        signal(SIGUSR1, set_reset_manual);
+        // TODO: SIGHUP reload config
+        signal(SIGHUP, set_reload_config);
     }
 
-    // Main brightness controlling loop
-    while (1) {
-        // TODO: 0 for off idle and reset
-        // Get values every POLL milliseconds
-        idle = get_user_idle_time();
-        reset_time += config.poll;
-        disp_val = get_file_value(DISP_PATH, "%d");
-        key_val = get_file_value(KEY_PATH, "%d");
-        sens_val = get_file_value(SENS_PATH, "(%d,");
-
-        // Reset manual mode if SIGUSR1 received
-        if (reset_man) {
-            disp_man = 0;
-            key_man = 0;
-            reset_man = 0;
-            syslog(LOG_NOTICE, "Manual mode resetted.");
-        }
-
-        // Reset manual mode after RESET_MAN milliseconds
-        if (reset_time - config.poll > config.reset) {
-            disp_val_last = disp_val;
-            key_val_last = key_val;
-            reset_time = 0;
-            disp_man = 0;
-            key_man = 0;
-        }
-
-        // Ignore sensor for keyboard or display or both if user changes brightness manually
-        if (disp_val_last != disp_val) {
-            disp_val_last = disp_val;
-            disp_man = 1;
-        }
-        if (key_val_last != key_val) {
-            key_val_last = (key_val == 0) ? key_val_last : key_val;
-            key_man = 1;
-        }
-
-        // Calculate brightness values
-        disp_val = (disp_man) ? disp_val_last : calc_disp_val(sens_val);
-        key_val = (key_man) ? key_val_last : calc_key_val(sens_val);
-        disp_val_last = disp_val;
-        key_val_last = key_val;
-
-        // Turn off keyboard after IDLE milliseconds
-        if (idle > config.idle)
-            key_val = 0;
-
-        // Adjust values in brightness files
-        write_file_value(DISP_PATH, disp_val);
-        write_file_value(KEY_PATH, key_val);
-
-        // Print debug info when not in daemon mode (-v flag)
-        if (verbose && !daemon)
-            print_info(disp_val, key_val, idle, reset_time, sens_val, disp_man, key_man);
-
-        // Wait for POLL millisecond
-        nsleep(config.poll);
-
-    }
+    // Start main brightness controlling loop
+    start_control(config);
 
     // We never get here
     return 0;

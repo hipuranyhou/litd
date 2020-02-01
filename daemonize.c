@@ -13,8 +13,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <syslog.h>
+#include "config.h"
+#include "control.h"
 #include "daemonize.h"
-#include "functions.h"
 
 void handle_exit_signal(int sig) {
     // Exit after every prepared signal
