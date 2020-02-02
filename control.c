@@ -8,7 +8,7 @@
 #include "control.h"
 #include "xidle.h"
 
-// TODO: find default max brightness, otherwise use default
+// TODO: config default max brightness, otherwise use default
 
 #define DISP_MAX 1953
 #define KEY_MAX 255
@@ -33,19 +33,21 @@ int get_file_value(const char *path, const char *search) {
     // Gets brightness value from file
     FILE *fp = NULL;
     int value = 100;
-    fp = fopen(path, "r");
+    if ((fp = fopen(path, "r")) == NULL)
+        return -1;
     fscanf(fp, search, &value);
     fclose(fp);
     return value;
 }
 
-void write_file_value(const char *path, int value) {
+int write_file_value(const char *path, int value) {
     // Writes new brightness value into file
     FILE *fp = NULL;
-    fp = fopen(path, "w+");
+    if ((fp = fopen(path, "w+")) == NULL)
+        return 0;
     fprintf(fp, "%d\n", value);
     fclose(fp);
-    return;
+    return 1;
 }
 
 int calc_disp_val(int sens_val) {
@@ -78,13 +80,15 @@ void print_verbose_info(int disp_val, int key_val, int idle, int reset, int sens
     return;
 }
 
-void start_control(CONFIG config) {
+int start_control(CONFIG config) {
 
     // Prepare all values on start
-    int disp_val_last,  key_val_last,  sens_val, idle_time;
+    int disp_val, disp_val_last,  key_val, key_val_last,  sens_val, idle_time;
     int disp_man = 0, key_man = 0, reset_time = 0;
-    int disp_val = get_file_value(DISP_PATH, "%d");
-    int key_val = get_file_value(KEY_PATH, "%d");
+    if ((disp_val = get_file_value(DISP_PATH, "%d")) == -1)
+        return 1;
+    if ((key_val = get_file_value(KEY_PATH, "%d")) == -1)
+        return 1;
     disp_val_last = disp_val;
     key_val_last = key_val;
 
@@ -94,9 +98,12 @@ void start_control(CONFIG config) {
         // Get values every POLL milliseconds
         idle_time = get_user_idle_time();
         reset_time += config.poll;
-        disp_val = get_file_value(DISP_PATH, "%d");
-        key_val = get_file_value(KEY_PATH, "%d");
-        sens_val = get_file_value(SENS_PATH, "(%d,");
+        if ((disp_val = get_file_value(DISP_PATH, "%d")) == -1)
+            return 1;
+        if ((key_val = get_file_value(KEY_PATH, "%d")) == -1)
+            return 1;
+        if ((sens_val = get_file_value(SENS_PATH, "(%d,")) == -1)
+            return 1;
 
         // Reset manual mode if SIGUSR1 received
         if (reset_man) {
@@ -136,8 +143,10 @@ void start_control(CONFIG config) {
             key_val = 0;
 
         // Adjust values in brightness files
-        write_file_value(DISP_PATH, disp_val);
-        write_file_value(KEY_PATH, key_val);
+        if (!write_file_value(DISP_PATH, disp_val))
+            return 2;
+        if (!write_file_value(KEY_PATH, key_val))
+            return 2;
 
         // Print debug info when not in daemon mode (-v flag)
         if (config.verbose && !config.daemon)
@@ -149,6 +158,6 @@ void start_control(CONFIG config) {
     }
 
     // We never get here
-    return;
+    return 0;
 
 }

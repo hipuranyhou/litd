@@ -5,6 +5,6 @@
 
 void handle_signal(int sig);
 void prepare_signals(void);
-void daemonize(void);
+void daemonize(CONFIG config);
 
 #endif

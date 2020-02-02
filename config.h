@@ -4,6 +4,7 @@
 #define CONFIG_H
 
 typedef struct config {
+    char config_path[128];
     int daemon;
     int verbose;
     int poll;
@@ -13,8 +14,10 @@ typedef struct config {
 
 int check_root(void);
 int process_options(int argc, char **argv, CONFIG *config);
-int get_user_home_dir();
-int generate_config_file(const char *path);
-int read_config_file(const char *path, CONFIG *config);
+int get_user_home_dir(const char **homedir);
+int check_directory(const char *path);
+void print_config_file(FILE *fp);
+int generate_config_file(CONFIG *config);
+int read_config_file(CONFIG *config);
 
 #endif

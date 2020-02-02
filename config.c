@@ -16,8 +16,7 @@ int check_root(void) {
     uid_t uid = getuid();
     if (uid != 0)
         return 1;
-    else
-        return 0;
+    return 0;
 }
 
 int process_options(int argc, char **argv, CONFIG *config) {
@@ -41,11 +40,29 @@ int process_options(int argc, char **argv, CONFIG *config) {
     return 1;
 }
 
-int get_user_home_dir(char *homedir) {
+int get_user_home_dir(const char **homedir) {
     // https://stackoverflow.com/questions/2910377/get-home-directory-in-linux (josch && 9999years)
-    if ((homedir = getenv("HOME")) == NULL) {
-        homedir = getpwuid(getuid())->pw_dir;
+    if ((*homedir = getenv("HOME")) == NULL || *homedir[0] == '\0') {
+        *homedir = getpwuid(getuid())->pw_dir;
     }
+    if (*homedir == NULL)
+        return 0;
+    return 1;
+}
+
+int check_directory(const char *path) {
+    // https://codeforwin.org/2018/03/c-program-check-file-or-directory-exists-not.html
+    struct stat stats = {0};
+    stat(path, &stats);
+    // Check for file existence
+    if (S_ISDIR(stats.st_mode))
+        return 1;
+    return 0;
+}
+
+int check_file(const char *path) {
+    if (access(path, F_OK) == -1)
+        return 0;
     return 1;
 }
 
@@ -62,23 +79,49 @@ void print_config_file(FILE *fp) {
     fputs("# default: 5 (0 for off)\n", fp);
     fputs("idle = 5\n", fp);
     fputs("\n", fp);
-    fputs("# Idle time in seconds (after how long should keyboard turn off.)\n", fp);
+    fputs("# Reset time in seconds (after how long should litd ignore manual brightness settings.)\n", fp);
     fputs("# default: 3600 (0 for off)\n", fp);
     fputs("reset = 3600\n", fp);
 }
 
-int generate_config_file(const char *path = NULL) {
+int generate_config_file(CONFIG *config) {
 
     FILE *fp = NULL;
-    //struct stat st = {0};
-    /*
-    // TODO: generate config in proper directory
-    if (path == NULL) {
+    const char *base_path;
+    char folder_path[118];
+    char file_path[128];
 
-        if (stat("/home") == -1)
+    /*
+     * Decide if we should create our config folder and file inside XDH_HOME_DIRS
+     * system variable or inside user HOME directory
+     */
+    if ((base_path = getenv("XDG_HOME_DIRS")) == NULL || base_path[0] == '\0') {
+        if (!get_user_home_dir(&base_path)) {
+            return 2;
+        }
+        if (snprintf(folder_path, sizeof(folder_path), "%s%s", base_path, "/.config/litd\0") >= 118)
+            return 3;
+    } else {
+        if (snprintf(folder_path, sizeof(folder_path), "%s%s", base_path, "/litd\0") >= 118)
+            return 3;
     }
-    */
-    if ((fp = fopen(path, "w+")) == NULL) {
+
+    // Create litd directory at proper location
+    if (!check_directory(folder_path))
+        if (mkdir(folder_path, 0770) == -1)
+            return 4;
+
+    // Put location of litd config folder inside our global config structure
+    memcpy(config->config_path, folder_path, sizeof(folder_path));
+
+    // Get full path of config file
+    snprintf(file_path, sizeof(file_path), "%s%s", folder_path, "/litd.conf\0");
+
+    // Generate config only if it does not exist
+    if (check_file(file_path))
+        return 0;
+
+    if ((fp = fopen(file_path, "w+")) == NULL) {
         return 1;
     }
 
@@ -88,14 +131,17 @@ int generate_config_file(const char *path = NULL) {
     return 0;
 }
 
-int read_config_file(const char *path, CONFIG *config) {
+int read_config_file(CONFIG *config) {
 
     FILE *fp = NULL;
-    char buffer[256] = {0}, *line = NULL;
+    char buffer[32] = {0}, *line = NULL, file_path[138];
     int value = 0, line_cnt = 0;
     size_t len = 0;
 
-    if((fp = fopen(path, "r")) == NULL) {
+    // Get full path of config file
+    snprintf(file_path, sizeof(file_path), "%s%s", config->config_path, "/litd.conf\0");
+
+    if ((fp = fopen(file_path, "r")) == NULL) {
         return -1;
     }
 
@@ -107,8 +153,8 @@ int read_config_file(const char *path, CONFIG *config) {
         if (line[0] == '#' || line[0] == '\n')
             continue;
 
-        // Get 1 value from config line_cnt-th line
-        if (sscanf(line, "%255s = %d", buffer, &value) != 2) {
+        // Get value from config line_cnt-th line
+        if (sscanf(line, "%31s = %d", buffer, &value) != 2) {
             free(line);
             return line_cnt;
         }
@@ -120,6 +166,10 @@ int read_config_file(const char *path, CONFIG *config) {
             config->idle = value * 1000;
         else if (strcmp("reset", buffer) == 0)
             config->reset = value * 1000;
+        else {
+            free(line);
+            return line_cnt;
+        }
 
     }
 
