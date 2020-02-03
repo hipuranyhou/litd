@@ -1,4 +1,6 @@
-# litd (v1.0.0)
+# litd
+###### v1.0.0
+
 Daemon for automatic management of keyboard and display brightness using applesmc light sensor (for Mac on Linux.)
 
 [Installation guide](#installation-guide)
@@ -90,6 +92,8 @@ See [litd.conf](https://github.com/Hipuranyhou/litd/blob/master/litd.conf) file 
 
 
 ### Signals
+Sending signals to litd works only in daemon mode (`litd -d`)
+
 litd ignores sensor value for [reset](https://github.com/Hipuranyhou/litd/blob/master/litd.conf) seconds if you adjust brightness manually. It does this seperately for keyboard and display. You can reset this by sending `SIGUSR1` to litd.
 <pre>
 $ kill -SIGUSR1 <i>litd_pid</i>
