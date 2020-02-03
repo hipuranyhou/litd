@@ -26,6 +26,9 @@ int main(int argc, char **argv) {
     CONFIG config;
     config.daemon = 0;
     config.verbose = 0;
+    config.poll = 400;
+    config.idle = 5000;
+    config.reset = 3600000;
     int err = 0;
 
     // Process command line options
