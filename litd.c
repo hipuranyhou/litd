@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     init_config(&config);
     int err = 0;
 
-    // Check if we are not root
+    // Check if we are not running as root
     if(!check_root()) {
         fprintf(stderr, "Running as root not allowed!\n");
         return 1;

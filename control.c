@@ -18,14 +18,13 @@ extern volatile int reload_config;
 void nsleep(int milisec) {
     // Helper function for nanosleep()
     struct timespec req = {0};
-    req.tv_sec = 0;
-    req.tv_nsec = milisec * 1000000L;
+    req.tv_sec = milisec / 1000;
+    req.tv_nsec = (milisec % 1000) * 1000000L;
     nanosleep(&req, NULL);
     return;
 }
 
 int get_file_value(const char *path, const char *search) {
-    // Gets brightness value from file
     FILE *fp = NULL;
     int value = 100;
     if ((fp = fopen(path, "r")) == NULL)
@@ -36,26 +35,25 @@ int get_file_value(const char *path, const char *search) {
 }
 
 int write_file_value(const char *path, int value) {
-    // Writes new brightness value into file
     FILE *fp = NULL;
     if ((fp = fopen(path, "w+")) == NULL)
         return 0;
-    fprintf(fp, "%d\n", value);
+    fprintf(fp, "%d", value);
     fclose(fp);
     return 1;
 }
 
 int calc_disp_val(int disp_max, int disp_min, int sens_val) {
-    // Calculates new display brightness value based on sensor value in range 190 - DISP_MAX
+    // Calculates new display brightness value based on sensor value in range disp_min - disp_max
     if (sens_val < 30)
         return disp_min;
     if (sens_val > 225)
         return disp_max;
-    return ((sens_val - 30) / (225 - 30)) * (disp_max - 190) + 190;
+    return ((sens_val - 30) / (225 - 30)) * (disp_max - disp_min) + disp_min;
 }
 
 int calc_key_val(int key_max, int key_min, int sens_val) {
-    // Calculates new keyboard brightness value based on sensor value in range 25 - KEY_MAX
+    // Calculates new keyboard brightness value based on sensor value in range key_min - key_max
     if (sens_val < 30)
         return key_min;
     if (sens_val > 225)
@@ -90,7 +88,7 @@ int start_control(CONFIG *config) {
     // Main brightness controlling loop
     while (1) {
 
-        // Get values every POLL milliseconds
+        // Get brightness values every POLL milliseconds
         idle_time = get_user_idle_time();
         if ((disp_val = get_file_value(DISP_PATH, "%d")) == -1)
             return 1;
@@ -123,7 +121,7 @@ int start_control(CONFIG *config) {
                 printf("Config reloaded.\n");
         }
 
-        // Reset manual mode after RESET_MAN milliseconds
+        // Reset manual mode after reset milliseconds
         if (reset_time > config->reset) {
             disp_val_last = disp_val;
             key_val_last = key_val;
@@ -148,7 +146,7 @@ int start_control(CONFIG *config) {
         disp_val_last = disp_val;
         key_val_last = key_val;
 
-        // Turn off keyboard after IDLE milliseconds
+        // Turn off keyboard after idle milliseconds
         if (config->idle != 0 && idle_time > config->idle)
             key_val = 0;
 
@@ -158,13 +156,13 @@ int start_control(CONFIG *config) {
         if (!write_file_value(KEY_PATH, key_val))
             return 2;
 
-        // Print debug info when not in daemon mode (-v flag)
+        // Print verbose info when not in daemon mode (-v flag)
         if (config->verbose && !config->daemon)
             print_verbose_info(disp_val, key_val, idle_time, reset_time, sens_val, disp_man, key_man);
 
         reset_time += config->poll;
 
-        // Wait for POLL millisecond
+        // Wait for poll millisecond
         nsleep(config->poll);
 
     }

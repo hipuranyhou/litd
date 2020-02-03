@@ -21,18 +21,17 @@ int check_root(void) {
 
 int process_options(int argc, char **argv, CONFIG *config) {
     int opt;
-    // Process command line options
     while ((opt = getopt(argc, argv, ":dv")) != -1) {
         switch (opt) {
             // Daemonize
             case 'd':
                 config->daemon = 1;
                 break;
-                // Verbose
+            // Verbose
             case 'v':
                 config->verbose = 1;
                 break;
-                // Unknown option
+            // Unknown option
             case '?':
                 return 0;
         }
@@ -54,7 +53,6 @@ int check_directory(const char *path) {
     // https://codeforwin.org/2018/03/c-program-check-file-or-directory-exists-not.html
     struct stat stats = {0};
     stat(path, &stats);
-    // Check for file existence
     if (S_ISDIR(stats.st_mode))
         return 1;
     return 0;
@@ -189,7 +187,7 @@ int read_config_file(CONFIG *config) {
             return line_cnt;
         }
 
-        // Assign proper config value
+        // Assign proper config value into config structure
         if (strcmp("poll", buffer) == 0)
             config->poll = value;
         else if (strcmp("idle", buffer) == 0)
