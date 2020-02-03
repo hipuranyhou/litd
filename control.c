@@ -80,7 +80,7 @@ void print_verbose_info(int disp_val, int key_val, int idle, int reset, int sens
     return;
 }
 
-int start_control(CONFIG config) {
+int start_control(CONFIG *config) {
 
     // Prepare all values on start
     int disp_val, disp_val_last,  key_val, key_val_last,  sens_val, idle_time;
@@ -97,7 +97,7 @@ int start_control(CONFIG config) {
         // TODO: 0 for off idle and reset
         // Get values every POLL milliseconds
         idle_time = get_user_idle_time();
-        reset_time += config.poll;
+        reset_time += config->poll;
         if ((disp_val = get_file_value(DISP_PATH, "%d")) == -1)
             return 1;
         if ((key_val = get_file_value(KEY_PATH, "%d")) == -1)
@@ -110,11 +110,27 @@ int start_control(CONFIG config) {
             disp_man = 0;
             key_man = 0;
             reset_man = 0;
-            syslog(LOG_NOTICE, "Manual mode resetted.");
+            if (config->daemon)
+                syslog(LOG_NOTICE, "Manual mode resetted.");
+            else
+                printf("Manual mode resetted.\n");
+        }
+
+        // Reload config if SIGHUP received
+        if (reload_config) {
+            if (read_config_file(config) != 0)
+                return 3;
+            disp_man = 0;
+            key_man = 0;
+            reload_config = 0;
+            if (config->daemon)
+                syslog(LOG_NOTICE, "Config reloaded.");
+            else
+                printf("Config reloaded.\n");
         }
 
         // Reset manual mode after RESET_MAN milliseconds
-        if (reset_time - config.poll > config.reset) {
+        if (reset_time - config->poll > config->reset) {
             disp_val_last = disp_val;
             key_val_last = key_val;
             reset_time = 0;
@@ -139,7 +155,7 @@ int start_control(CONFIG config) {
         key_val_last = key_val;
 
         // Turn off keyboard after IDLE milliseconds
-        if (idle_time > config.idle)
+        if (idle_time > config->idle)
             key_val = 0;
 
         // Adjust values in brightness files
@@ -149,11 +165,11 @@ int start_control(CONFIG config) {
             return 2;
 
         // Print debug info when not in daemon mode (-v flag)
-        if (config.verbose && !config.daemon)
+        if (config->verbose && !config->daemon)
             print_verbose_info(disp_val, key_val, idle_time, reset_time, sens_val, disp_man, key_man);
 
         // Wait for POLL millisecond
-        nsleep(config.poll);
+        nsleep(config->poll);
 
     }
 

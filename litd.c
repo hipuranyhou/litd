@@ -84,10 +84,19 @@ int main(int argc, char **argv) {
     }
 
     // Start main brightness controlling loop
-    if ((err = start_control(config)) != 0) {
-        if (config.daemon) {
-            syslog(LOG_NOTICE, "Error writing value to or getting value from file.");
-            syslog(LOG_NOTICE, "Check permissions on all files.");
+    if ((err = start_control(&config)) != 0) {
+        if (err == 3 && config.daemon) {
+            syslog(LOG_ERR, "Error while reloading config file.");
+            syslog(LOG_ERR, "Try running litd not in daemon mode to get more info.");
+            syslog(LOG_NOTICE, "Terminating.");
+            closelog();
+        } else if (err == 3) {
+            fprintf(stderr, "Error while reloading config file.");
+            fprintf(stderr, "Try running litd not in daemon mode to get more info.");
+            fprintf(stderr, "Terminating.");
+        } else if (config.daemon) {
+            syslog(LOG_ERR, "Error writing value to or getting value from file.");
+            syslog(LOG_ERR, "Check permissions on all files.");
             syslog(LOG_NOTICE, "Terminating.");
             closelog();
         } else {

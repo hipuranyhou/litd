@@ -10,24 +10,22 @@ Make sure you have `rw` permissions on keyboard brightness file `/sys/devices/pl
 
 Permissions for keyboard and display brightness files need to be set on every boot. For this use `brightness-perm.service`. Put it in `/etc/systemd/system/`, reload systemd daemon
 ```Shell
-sudo systemctl daemon-reload
+$ systemctl daemon-reload
 ```
 
 and enable
 ```Shell
-sudo systemctl enable --now brightness-perm.service
+$ systemctl enable --now brightness-perm.service
 ```
 
 Then make sure you have `r` permission on light sensor file `/sys/devices/platform/applesmc.768/light` (you should have it by deafult.)
-
-After this edit where will litd create its `litd.pid` file (`daemonize.c` - bottom.)
 
 Next edit `bin/litd-autostart` to point to your install directory, add `x` permission and autostart it at boot. **Make sure you keep the `-d` option in your path.** 
 
 ### Compilation 
 Finally, compile `litd` into `bin/` directory.
 ```Shell
-g++ litd.c xidle.c daemonize.c functions.c -lXss -lX11 -o bin/litd
+$ g++ litd.c xidle.c daemonize.c control.c config.c -lXss -lX11 -o bin/litd
 ```
 
 Reboot and check that everything works.
@@ -35,12 +33,12 @@ Reboot and check that everything works.
 ### Signals
 litd ignores sensor data for RESET_MAN (`litd.c` - top) if you adjust brightness manually. It does this seperately for keyboard and display. You can reset this manually by sending `SIGUSR1` to litd.
 <pre>
-kill -SIGUSR1 <i>litd_pid</i>
+$ kill -SIGUSR1 <i>litd_pid</i>
 </pre>
 
 ### Debug
 
 For debugging you can enable verbose mode (not allowed in daemon mode.)
 ```Shell
-./litd -v
+$ bin/./litd -v
 ```

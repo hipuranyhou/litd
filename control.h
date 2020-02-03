@@ -9,6 +9,6 @@ int write_file_value(const char *path, int value);
 int calc_disp_val(int sens_val);
 int calc_key_val(int sens_val);
 void print_verbose_info(int disp_val, int key_val, int idle, int reset, int sens_val, int disp_man, int key_man);
-int start_control(CONFIG config);
+int start_control(CONFIG *config);
 
 #endif
