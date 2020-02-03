@@ -3,7 +3,7 @@ Daemon for automatic management of keyboard and display brightness using applesm
 
 
 ## Installation guide
-
+**litd cannot run as root (to get user idle time properly)**
 
 ### Prerequisities
 To use litd your system has to fulfill all of these criteria:
@@ -20,8 +20,6 @@ To use litd your system has to fulfill all of these criteria:
 ii) and iv) need `rw` persmissions which have to be set on every boot. If you use systemd, you can use the included `brightness-perm.service` (how to use it is explained later in this guide.)
 
 If your system fulfills all of these criteria, you can continue in this guide and use litd.
-
-**litd cannot run as root (to get user idle time properly)**
 
 
 ### Setup
