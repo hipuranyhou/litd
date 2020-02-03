@@ -39,8 +39,6 @@ and enable
 $ systemctl enable --now brightness-perm.service
 ```
 
-Then make sure you have `r` permission on light sensor file `/sys/devices/platform/applesmc.768/light` (you should have it by deafult.)
-
 
 ### Compilation 
 Compile `litd` (probably into `bin/` directory) like this:
