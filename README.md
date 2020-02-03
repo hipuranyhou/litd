@@ -50,10 +50,7 @@ $ g++ litd.c xidle.c daemonize.c control.c config.c -O3 -lXss -lX11 -o bin/litd
 ### Autostart
 Next edit `bin/litd-autostart` to point to your compiled executable, add `x` permission and **autostart it at boot**. 
 
-**Make sure you keep the sleep command. It is needed on boot.**
-
 **Make sure you keep the `-d` option in your path (to start litd in daemon mode.)** 
-
 
 **Reboot and check that everything works**
 
