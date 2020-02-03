@@ -16,7 +16,6 @@ void set_reset_manual(int sig) {
 }
 
 void set_reload_config(int sig) {
-    // TODO: SIGHUP reload config
     reload_config = 1;
     return;
 }
@@ -68,6 +67,9 @@ int main(int argc, char **argv) {
         switch (err) {
             case -1:
                 fprintf(stderr, "Check permissions.\n");
+                return 1;
+            case -2:
+                fprintf(stderr, "Keyboard and display min/max brightness values cannot be 0.\n");
                 return 1;
             default:
                 fprintf(stderr, "Line %d\n", err);

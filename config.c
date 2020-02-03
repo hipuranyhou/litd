@@ -80,8 +80,26 @@ void print_config_file(FILE *fp) {
     fputs("idle = 5\n", fp);
     fputs("\n", fp);
     fputs("# Reset time in seconds (after how long should litd ignore manual brightness settings.)\n", fp);
-    fputs("# default: 3600 (0 for off)\n", fp);
+    fputs("# default: 3600\n", fp);
     fputs("reset = 3600\n", fp);
+    fputs("\n", fp);
+    fputs("# Max display brightness value from /sys/class/backlight/intel_backlight/max_brightness\n", fp);
+    fputs("# default: 0 (has to be changed)\n", fp);
+    fputs("display_max = 0\n", fp);
+    fputs("\n", fp);
+    fputs("# Min display brightness value for sensor value of 0 (in absolute darkness)\n", fp);
+    fputs("# Recommended 1/10 of max\n", fp);
+    fputs("# default: 0 (has to be changed)\n", fp);
+    fputs("display_min = 0\n", fp);
+    fputs("\n", fp);
+    fputs("# Max keyboard brightness value from /sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/max_brightness\n", fp);
+    fputs("# default: 0 (has to be changed)\n", fp);
+    fputs("keyboard_max = 0\n", fp);
+    fputs("\n", fp);
+    fputs("# Min keyboard brightness value for sensor value of 0 (in absolute darkness)\n", fp);
+    fputs("# Recommended 1/10 of max\n", fp);
+    fputs("# default: 0 (has to be changed)\n", fp);
+    fputs("keyboard_min = 0\n", fp);
 }
 
 int generate_config_file(CONFIG *config) {
@@ -166,7 +184,23 @@ int read_config_file(CONFIG *config) {
             config->idle = value * 1000;
         else if (strcmp("reset", buffer) == 0)
             config->reset = value * 1000;
-        else {
+        else if (strcmp("display_max", buffer) == 0) {
+            if (value == 0)
+                return -2;
+            config->disp_max = value;
+        } else if (strcmp("display_min", buffer) == 0) {
+            if (value == 0)
+                return -2;
+            config->disp_min = value;
+        } else if (strcmp("keyboard_max", buffer) == 0) {
+            if (value == 0)
+                return -2;
+            config->key_max = value;
+        } else if (strcmp("keyboard_min", buffer) == 0) {
+            if (value == 0)
+                return -2;
+            config->key_min = value;
+        } else {
             free(line);
             return line_cnt;
         }

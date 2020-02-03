@@ -10,6 +10,10 @@ typedef struct config {
     int poll;
     int idle;
     int reset;
+    int disp_max;
+    int disp_min;
+    int key_max;
+    int key_min;
 } CONFIG;
 
 int check_root(void);

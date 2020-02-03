@@ -31,9 +31,14 @@ $ g++ litd.c xidle.c daemonize.c control.c config.c -lXss -lX11 -o bin/litd
 Reboot and check that everything works.
 
 ### Signals
-litd ignores sensor data for RESET_MAN (`litd.c` - top) if you adjust brightness manually. It does this seperately for keyboard and display. You can reset this manually by sending `SIGUSR1` to litd.
+litd ignores sensor data for `reset` seconds if you adjust brightness manually. It does this seperately for keyboard and display. You can reset this by sending `SIGUSR1` to litd.
 <pre>
 $ kill -SIGUSR1 <i>litd_pid</i>
+</pre>
+
+You can reload config by sending `SIGHUP` to litd.
+<pre>
+$ kill -SIGHUP <i>litd_pid</i>
 </pre>
 
 ### Debug

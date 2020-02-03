@@ -94,10 +94,9 @@ int start_control(CONFIG *config) {
 
     // Main brightness controlling loop
     while (1) {
-        // TODO: 0 for off idle and reset
+        // TODO: 0 for off idle
         // Get values every POLL milliseconds
         idle_time = get_user_idle_time();
-        reset_time += config->poll;
         if ((disp_val = get_file_value(DISP_PATH, "%d")) == -1)
             return 1;
         if ((key_val = get_file_value(KEY_PATH, "%d")) == -1)
@@ -130,7 +129,7 @@ int start_control(CONFIG *config) {
         }
 
         // Reset manual mode after RESET_MAN milliseconds
-        if (reset_time - config->poll > config->reset) {
+        if (reset_time > config->reset) {
             disp_val_last = disp_val;
             key_val_last = key_val;
             reset_time = 0;
@@ -167,6 +166,8 @@ int start_control(CONFIG *config) {
         // Print debug info when not in daemon mode (-v flag)
         if (config->verbose && !config->daemon)
             print_verbose_info(disp_val, key_val, idle_time, reset_time, sens_val, disp_man, key_man);
+
+        reset_time += config->poll;
 
         // Wait for POLL millisecond
         nsleep(config->poll);
