@@ -78,7 +78,7 @@ $ ./litd -v
 
 
 ### Config file
-litd creates its config file (and .pid file in daemon mode) in directory `litd/` which location is determined based on `$XDG_HOME_DIRS`. If this variable does not exist or is empty, then default path `$HOME/.config/` is used.
+litd creates its config file (and .pid file in daemon mode) in directory `litd/` whose location is determined based on `$XDG_HOME_DIRS`. If this variable does not exist or is empty, then default path `$HOME/.config/` is used.
 
 See [litd.conf](https://github.com/Hipuranyhou/litd/blob/master/litd.conf) file for more info.
 
