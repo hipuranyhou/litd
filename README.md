@@ -79,7 +79,7 @@ See [litd.conf](https://github.com/Hipuranyhou/litd/edit/master/litd.conf) file 
 
 
 ### Signals
-litd ignores sensor data for `reset` seconds if you adjust brightness manually. It does this seperately for keyboard and display. You can reset this by sending `SIGUSR1` to litd.
+litd ignores value data for `reset` seconds if you adjust brightness manually. It does this seperately for keyboard and display. You can reset this by sending `SIGUSR1` to litd.
 <pre>
 $ kill -SIGUSR1 <i>litd_pid</i>
 </pre>
