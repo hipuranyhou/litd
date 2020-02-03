@@ -8,8 +8,6 @@
 #include "control.h"
 #include "xidle.h"
 
-// TODO: use brightness values from config file
-
 #define SENS_PATH "/sys/devices/platform/applesmc.768/light"
 #define DISP_PATH "/sys/class/backlight/intel_backlight/brightness"
 #define KEY_PATH "/sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/brightness"
