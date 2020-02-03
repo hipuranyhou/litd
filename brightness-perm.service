@@ -1,5 +1,5 @@
 [Unit]
-Description=edit permissions on files required by litd.service
+Description=Edit permissions on files required by litd.service
 
 [Service]
 Type=oneshot
