@@ -21,11 +21,11 @@ ii) and iv) need `rw` persmissions which have to be set on every boot. If you us
 
 If your system fulfills all of these criteria, you can continue in this guide and use litd.
 
+**litd cannot run as root (to get user idle time properly)**
+
 
 ### Setup
 Clone this repo where you want to have litd installed.
-
-**litd cannot run as root (to get user idle time properly)**
  
 Make sure you have `rw` permissions on keyboard brightness file `/sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/brightness` and display brightness file `/sys/class/backlight/intel_backlight/brightness`.
 
@@ -59,6 +59,7 @@ Next edit `bin/litd-autostart` to point to your compiled executable, add `x` per
 
 
 ## Usage
+**litd cannot run as root (to get user idle time properly)**
 
 
 ### Flags
