@@ -1,4 +1,4 @@
-// Hipuranyhou - litd - ver 0.2 - 30.01.2020
+// Hipuranyhou - litd - v1.0 - 03.02.2020
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,7 +136,7 @@ int generate_config_file(CONFIG *config) {
 
     // Create litd directory at proper location
     if (!check_directory(folder_path))
-        if (mkdir(folder_path, 0770) == -1)
+        if (mkdir(folder_path, 0700) == -1)
             return 4;
 
     // Put location of litd config folder inside our global config structure

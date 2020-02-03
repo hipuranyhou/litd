@@ -1,4 +1,4 @@
-// Hipuranyhou - litd - ver 0.2 - 30.01.2020
+// Hipuranyhou - litd - v1.0 - 03.02.2020
 
 #ifndef CONTROL_H
 #define CONTROL_H
