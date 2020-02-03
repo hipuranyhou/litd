@@ -35,7 +35,6 @@ void handle_exit_signal(int sig) {
 void prepare_signals(void) {
     // Prepare all signals after which we terminate
     signal(SIGABRT, handle_exit_signal);
-    signal(SIGHUP, handle_exit_signal);
     signal(SIGINT, handle_exit_signal);
     signal(SIGQUIT, handle_exit_signal);
     signal(SIGTERM, handle_exit_signal);

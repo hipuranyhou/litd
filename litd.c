@@ -85,8 +85,6 @@ int main(int argc, char **argv) {
         signal(SIGHUP, set_reload_config);
     }
 
-    nsleep(5000);
-
     // Start main brightness controlling loop
     if ((err = start_control(&config)) != 0) {
         if (err == 3 && config.daemon) {

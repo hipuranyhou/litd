@@ -1,0 +1,11 @@
+[Unit]
+Description=Auto start litd on user login
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/usr/bin/sleep 5
+ExecStart=/home/hipuranyhou/Code/litd/bin/litd -d
+
+[Install]
+WantedBy=default.target

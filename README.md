@@ -1,9 +1,14 @@
-# litd
+# litd (v1.0.0)
 Daemon for automatic management of keyboard and display brightness using applesmc light sensor (for Mac on Linux.)
 
+[Installation guide](#installation-guide)
+
+[Usage](#usage)
 
 ## Installation guide
 **litd cannot run as root (to get user idle time properly)**
+
+If your system is not systemd based, you need to figure the permissions and auto start sections by yourself.
 
 ### Prerequisities
 To use litd your system has to fulfill all of these criteria:
@@ -27,13 +32,9 @@ Clone this repo where you want to have litd installed.
  
 Make sure you have `rw` permissions on keyboard brightness file `/sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/brightness` and display brightness file `/sys/class/backlight/intel_backlight/brightness`.
 
-Permissions for keyboard and display brightness files need to be set on every boot. For this use `brightness-perm.service`. Put it in `/etc/systemd/system/`, reload systemd daemon
+Permissions for keyboard and display brightness files need to be set on every boot. For this use `units/brightness-perm.service`. Put it in `/etc/systemd/system/` and enable it.
 ```Shell
 $ systemctl daemon-reload
-```
-
-and enable
-```Shell
 $ systemctl enable --now brightness-perm.service
 ```
 
@@ -41,6 +42,7 @@ $ systemctl enable --now brightness-perm.service
 ### Compilation 
 Compile `litd` (probably into `bin/` directory) like this:
 ```Shell
+$ mkdir bin
 $ g++ litd.c xidle.c daemonize.c control.c config.c -O3 -lXss -lX11 -o bin/litd
 ```
 
@@ -53,11 +55,15 @@ See [litd.conf](https://github.com/Hipuranyhou/litd/blob/master/litd.conf) for d
 
 
 ### Auto start
-Next edit `bin/litd-autostart` to point at your compiled executable, add `x` permission and **auto start it at boot**. 
+Next edit `units/litd.service` to point at your compiled executable, put it in `$HOME/.config/systemd/user/` and enable it as user unit.
+```Shell
+$ systemctl --user daemon-reload
+$ systemctl --user enable --now litd.service
+```
 
 **Make sure you keep the `-d` option in your path (to start litd in daemon mode.)** 
 
-**Reboot and check that everything works**
+**Check that everything works.**
 
 
 ## Usage
@@ -68,12 +74,12 @@ Next edit `bin/litd-autostart` to point at your compiled executable, add `x` per
 
 `-d` to run in daemon mode (`litd.pid` file located at the same location as [config file](#config-file))
 ```Shell
-$ ./litd -d
+$ litd -d
 ```
 
 `-v` to run in verbose mode (not allowed in daemon mode)
 ```Shell
-$ ./litd -v
+$ litd -v
 ```
 
 
