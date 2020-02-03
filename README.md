@@ -1,6 +1,27 @@
 # litd
 Daemon for automatic management of keyboard and display brightness using applesmc light sensor (for Mac on Linux.)
 
+
+## Installation guide
+
+
+### Prerequisities
+To use litd your system has to fulfill all of these criteria:
+1. Linux on a Mac.
+1. Libraries: `libXss` and `libX11` (for getting user idle time.)
+1. Files (permissions): 
+   1. `/sys/devices/platform/applesmc.768/light` (o=r)
+   1. `/sys/class/backlight/intel_backlight/brightness` (o=rw)
+   1. `/sys/class/backlight/intel_backlight/max_brightness` (o=r)
+   1. `/sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/brightness` (o=rw)
+   1. `/sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/max_brightness` (o=r)
+1. GCC compiler.
+
+ii) and iv) need `rw` persmissions which have to be set on every boot. If you use systemd, you can use the included `brightness-perm.service` (how to use it is explained later in this guide.)
+
+If your system fulfills all of these criteria, you can continue in this guide and use litd.
+
+
 ### Setup
 Clone this repo where you want to have litd installed.
 
@@ -20,15 +41,46 @@ $ systemctl enable --now brightness-perm.service
 
 Then make sure you have `r` permission on light sensor file `/sys/devices/platform/applesmc.768/light` (you should have it by deafult.)
 
-Next edit `bin/litd-autostart` to point to your install directory, add `x` permission and autostart it at boot. **Make sure you keep the `-d` option in your path.** 
 
 ### Compilation 
-Finally, compile `litd` into `bin/` directory.
+Compile `litd` (probably into `bin/` directory) like this:
 ```Shell
-$ g++ litd.c xidle.c daemonize.c control.c config.c -lXss -lX11 -o bin/litd
+$ g++ litd.c xidle.c daemonize.c control.c config.c -O3 -lXss -lX11 -o bin/litd
 ```
 
-Reboot and check that everything works.
+
+### Autostart
+Next edit `bin/litd-autostart` to point to your compiled executable, add `x` permission and **autostart it at boot**. 
+
+**Make sure you keep the sleep command. It is needed on boot.**
+
+**Make sure you keep the `-d` option in your path (to start litd in daemon mode.)** 
+
+
+**Reboot and check that everything works**
+
+
+## Usage
+
+
+### Flags
+
+`-d` to run in daemon mode (`litd.pid` file located at the same location as [config file](#config-file))
+```Shell
+$ ./litd -d
+```
+
+`-v` to run in verbose mode (not allowed in daemon mode)
+```Shell
+$ ./litd -v
+```
+
+
+### Config file
+litd creates its config file (and .pid file in daemon mode) in directory `litd` which location is determined based on `$XDG_HOME_DIRS`. If this variable does not exist or is empty, then default path `$HOME/.config/` is used.
+
+See [litd.conf](https://github.com/Hipuranyhou/litd/edit/master/litd.conf) file for more info.
+
 
 ### Signals
 litd ignores sensor data for `reset` seconds if you adjust brightness manually. It does this seperately for keyboard and display. You can reset this by sending `SIGUSR1` to litd.
@@ -40,10 +92,3 @@ You can reload config by sending `SIGHUP` to litd.
 <pre>
 $ kill -SIGHUP <i>litd_pid</i>
 </pre>
-
-### Debug
-
-For debugging you can enable verbose mode (not allowed in daemon mode.)
-```Shell
-$ bin/./litd -v
-```
