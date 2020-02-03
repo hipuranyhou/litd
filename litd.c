@@ -1,111 +1,115 @@
 // Hipuranyhou - litd - ver 0.2 - 30.01.2020
 
+#include <stdio.h>
 #include <signal.h>
 #include <syslog.h>
-#include "xidle.h"
+#include "config.h"
 #include "daemonize.h"
-#include "functions.h"
+#include "control.h"
 
-#define SENS_PATH "/sys/devices/platform/applesmc.768/light"
-#define DISP_PATH "/sys/class/backlight/intel_backlight/brightness"
-#define KEY_PATH "/sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/brightness"
+extern volatile int reset_man;
+extern volatile int reload_config;
 
-#define POLL 400
-#define IDLE 5000
-#define RESET_MAN 3600000
-
-static volatile int reset_man = 0;
-
-void set_reset_man(int sig) {
+void set_reset_manual(int sig) {
     reset_man = 1;
+    return;
+}
+
+void set_reload_config(int sig) {
+    reload_config = 1;
     return;
 }
 
 int main(int argc, char **argv) {
 
-    // Prepare all values on start
-    int disp_val_last,  key_val_last,  sens_val, idle;
-    int disp_man = 0, key_man = 0, reset = 0, daemon = 0, verbose = 0;
-    int disp_val = get_file_value(DISP_PATH, "%d");
-    int key_val = get_file_value(KEY_PATH, "%d");
-    disp_val_last = disp_val;
-    key_val_last = key_val;
-
-    // Check if we are not root
-    if(!check_user())
-        return 1;
+    CONFIG config;
+    config.daemon = 0;
+    config.verbose = 0;
+    config.poll = 400;
+    config.idle = 5000;
+    config.reset = 3600000;
+    int err = 0;
 
     // Process command line options
-    if (!process_options(argc, argv, &daemon, &verbose))
+    if (!process_options(argc, argv, &config)) {
+        fprintf(stderr, "Unknown option!\n");
         return 1;
-
-    // Daemonize litd
-    if (daemon) {
-        daemonize();
-        syslog (LOG_NOTICE, "Started.");
-        signal(SIGUSR1, set_reset_man);
     }
 
-    // Main brightness controlling loop
-    while (1) {
+    // Check if we are not root
+    if(!check_root()) {
+        fprintf(stderr, "Running as root not allowed!\n");
+        return 1;
+    }
 
-        // Get values every POLL milliseconds
-        idle = get_user_idle_time();
-        reset += POLL;
-        disp_val = get_file_value(DISP_PATH, "%d");
-        key_val = get_file_value(KEY_PATH, "%d");
-        sens_val = get_file_value(SENS_PATH, "(%d,");
-
-        // Reset manual mode if SIGUSR1 received
-        if (reset_man) {
-            disp_man = 0;
-            key_man = 0;
-            reset_man = 0;
-            syslog(LOG_NOTICE, "Manual mode resetted.");
+    // Generate config file
+    if ((err = generate_config_file(&config)) != 0) {
+        fprintf(stderr, "Error while generating config file.\n");
+        switch (err) {
+            case 1:
+                fprintf(stderr, "Check permissions.\n");
+                return 1;
+            case 2:
+                fprintf(stderr, "Cannot find user HOME directory.\n");
+                return 1;
+            case 3:
+                fprintf(stderr, "Path for config file too long.\n");
+                return 1;
+            case 4:
+                fprintf(stderr, "Cannot create litd config directory.\n");
+                return 1;
         }
+    }
 
-        // Reset manual mode after RESET_MAN milliseconds
-        if (reset - POLL > RESET_MAN) {
-            disp_val_last = disp_val;
-            key_val_last = key_val;
-            reset = 0;
-            disp_man = 0;
-            key_man = 0;
+    // Read config file
+    if ((err = read_config_file(&config)) != 0) {
+        fprintf(stderr, "Error while reading config file.\n");
+        switch (err) {
+            case -1:
+                fprintf(stderr, "Check permissions.\n");
+                return 1;
+            case -2:
+                fprintf(stderr, "Keyboard and display min/max brightness values cannot be 0.\n");
+                return 1;
+            default:
+                fprintf(stderr, "Line %d\n", err);
+                return 1;
         }
+    }
 
-        // Ignore sensor for keyboard or display or both if user changes brightness manually
-        if (disp_val_last != disp_val) {
-            disp_val_last = disp_val;
-            disp_man = 1;
+    // Daemonize litd
+    if (config.daemon) {
+        daemonize(config);
+        syslog(LOG_NOTICE, "Started.");
+        signal(SIGUSR1, set_reset_manual);
+        signal(SIGHUP, set_reload_config);
+    }
+
+    // Start main brightness controlling loop
+    if ((err = start_control(&config)) != 0) {
+        if (err == 3 && config.daemon) {
+            syslog(LOG_ERR, "Error while reloading config file.");
+            syslog(LOG_ERR, "Try running litd not in daemon mode to get more info.");
+            syslog(LOG_NOTICE, "Terminating.");
+            closelog();
+        } else if (err == 3) {
+            fprintf(stderr, "Error while reloading config file.");
+            fprintf(stderr, "Try running litd not in daemon mode to get more info.");
+            fprintf(stderr, "Terminating.");
+        } else if (config.daemon) {
+            syslog(LOG_ERR, "Error writing value to or getting value from file.");
+            syslog(LOG_ERR, "Check permissions on all files.");
+            syslog(LOG_NOTICE, "Terminating.");
+            closelog();
+        } else {
+            fprintf(stderr, "Error writing value to or getting value from file.\n");
+            fprintf(stderr, "Check permissions on all files.\n");
+            fprintf(stderr, "Terminating.\n");
         }
-        if (key_val_last != key_val) {
-            key_val_last = (key_val == 0) ? key_val_last : key_val;
-            key_man = 1;
-        }
-
-        // Calculate brightness values
-        disp_val = (disp_man) ? disp_val_last : calc_disp_val(sens_val);
-        key_val = (key_man) ? key_val_last : calc_key_val(sens_val);
-        disp_val_last = disp_val;
-        key_val_last = key_val;
-
-        // Turn off keyboard after IDLE milliseconds
-        if (idle > IDLE)
-            key_val = 0;
-
-        // Adjust values in brightness files
-        write_file_value(DISP_PATH, disp_val);
-        write_file_value(KEY_PATH, key_val);
-
-        // Print debug info when not in daemon mode (-v flag)
-        if (verbose && !daemon)
-            print_info(disp_val, key_val, idle, reset, sens_val, disp_man, key_man);
-
-        // Wait for POLL millisecond
-        nsleep(POLL);
-
+        return 1;
     }
 
     // We never get here
     return 0;
+
 }
