@@ -8,10 +8,7 @@
 #include "control.h"
 #include "xidle.h"
 
-// TODO: config default max brightness, otherwise use default
-
-#define DISP_MAX 1953
-#define KEY_MAX 255
+// TODO: use brightness values from config file
 
 #define SENS_PATH "/sys/devices/platform/applesmc.768/light"
 #define DISP_PATH "/sys/class/backlight/intel_backlight/brightness"
@@ -50,21 +47,21 @@ int write_file_value(const char *path, int value) {
     return 1;
 }
 
-int calc_disp_val(int sens_val) {
+int calc_disp_val(int disp_max, int disp_min, int sens_val) {
     // Calculates new display brightness value based on sensor value in range 190 - DISP_MAX
     if (sens_val < 30)
-        return 190;
+        return disp_min;
     if (sens_val > 225)
-        return DISP_MAX;
-    return ((sens_val - 30) / (225 - 30)) * (DISP_MAX - 190) + 190;
+        return disp_max;
+    return ((sens_val - 30) / (225 - 30)) * (disp_max - 190) + 190;
 }
 
-int calc_key_val(int sens_val) {
+int calc_key_val(int key_max, int key_min, int sens_val) {
     // Calculates new keyboard brightness value based on sensor value in range 25 - KEY_MAX
     if (sens_val < 30)
-        return 25;
+        return key_min;
     if (sens_val > 225)
-        return KEY_MAX;
+        return key_max;
     return sens_val;
 }
 
@@ -94,7 +91,7 @@ int start_control(CONFIG *config) {
 
     // Main brightness controlling loop
     while (1) {
-        // TODO: 0 for off idle
+
         // Get values every POLL milliseconds
         idle_time = get_user_idle_time();
         if ((disp_val = get_file_value(DISP_PATH, "%d")) == -1)
@@ -148,13 +145,13 @@ int start_control(CONFIG *config) {
         }
 
         // Calculate brightness values
-        disp_val = (disp_man) ? disp_val_last : calc_disp_val(sens_val);
-        key_val = (key_man) ? key_val_last : calc_key_val(sens_val);
+        disp_val = (disp_man) ? disp_val_last : calc_disp_val(config->disp_max, config->disp_min, sens_val);
+        key_val = (key_man) ? key_val_last : calc_key_val(config->key_max, config->key_min, sens_val);
         disp_val_last = disp_val;
         key_val_last = key_val;
 
         // Turn off keyboard after IDLE milliseconds
-        if (idle_time > config->idle)
+        if (config->idle != 0 && idle_time > config->idle)
             key_val = 0;
 
         // Adjust values in brightness files
