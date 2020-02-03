@@ -1,4 +1,8 @@
-// Hipuranyhou - litd - v1.0 - 03.02.2020
+/*
+ * Hipuranyhou - litd - v1.0.0 - 03.02.2020
+ * Daemon for automatic management of keyboard and display brightness
+ * using applesmc light sensor (for Mac on Linux.)
+ */
 
 #ifndef CONTROL_H
 #define CONTROL_H

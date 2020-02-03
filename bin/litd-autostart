@@ -1,4 +1,3 @@
 #!/bin/bash
 
-sleep 5
 /home/hipuranyhou/Code/litd/bin/./litd -d

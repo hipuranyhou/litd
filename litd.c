@@ -1,4 +1,8 @@
-// Hipuranyhou - litd - v1.0 - 03.02.2020
+/*
+ * Hipuranyhou - litd - v1.0.0 - 03.02.2020
+ * Daemon for automatic management of keyboard and display brightness
+ * using applesmc light sensor (for Mac on Linux.)
+ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -80,6 +84,8 @@ int main(int argc, char **argv) {
         signal(SIGUSR1, set_reset_manual);
         signal(SIGHUP, set_reload_config);
     }
+
+    nsleep(5000);
 
     // Start main brightness controlling loop
     if ((err = start_control(&config)) != 0) {

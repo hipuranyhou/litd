@@ -1,4 +1,10 @@
 /*
+ * Hipuranyhou - litd - v1.0.0 - 03.02.2020
+ * Daemon for automatic management of keyboard and display brightness
+ * using applesmc light sensor (for Mac on Linux.)
+ */
+
+/*
 * daemonize.c
 * This example daemonizes a process.
 * This is an answer to the stackoverflow question:
