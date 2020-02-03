@@ -68,9 +68,6 @@ int main(int argc, char **argv) {
             case -1:
                 fprintf(stderr, "Check permissions.\n");
                 return 1;
-            case -2:
-                fprintf(stderr, "Keyboard and display min/max brightness values cannot be 0.\n");
-                return 1;
             default:
                 fprintf(stderr, "Line %d\n", err);
                 return 1;

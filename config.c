@@ -192,27 +192,33 @@ int read_config_file(CONFIG *config) {
         }
 
         // Assign proper config value into config structure
-        if (strcmp("poll", buffer) == 0)
+        if (strcmp("poll", buffer) == 0) {
+            if (value <= 0)
+                return line_cnt;
             config->poll = value;
-        else if (strcmp("idle", buffer) == 0)
+        } else if (strcmp("idle", buffer) == 0) {
+            if (value < 0)
+                return line_cnt;
             config->idle = value * 1000;
-        else if (strcmp("reset", buffer) == 0)
+        } else if (strcmp("reset", buffer) == 0) {
+            if (value <= 0)
+                return line_cnt;
             config->reset = value * 1000;
-        else if (strcmp("display_max", buffer) == 0) {
-            if (value == 0)
-                return -2;
+        } else if (strcmp("display_max", buffer) == 0) {
+            if (value <= 0)
+                return line_cnt;
             config->disp_max = value;
         } else if (strcmp("display_min", buffer) == 0) {
-            if (value == 0)
-                return -2;
+            if (value <= 0)
+                return line_cnt;
             config->disp_min = value;
         } else if (strcmp("keyboard_max", buffer) == 0) {
-            if (value == 0)
-                return -2;
+            if (value <= 0)
+                return line_cnt;
             config->key_max = value;
         } else if (strcmp("keyboard_min", buffer) == 0) {
-            if (value == 0)
-                return -2;
+            if (value <= 0)
+                return line_cnt;
             config->key_min = value;
         } else {
             free(line);
