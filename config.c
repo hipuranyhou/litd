@@ -66,6 +66,18 @@ int check_file(const char *path) {
     return 1;
 }
 
+void init_config(CONFIG *config) {
+    config->daemon = 0;
+    config->verbose = 0;
+    config->poll = 400;
+    config->idle = 5000;
+    config->reset = 3600000;
+    config->disp_max = 0;
+    config->disp_min= 0;
+    config->key_max = 0;
+    config->key_min = 0;
+}
+
 void print_config_file(FILE *fp) {
     fputs("########################################\n", fp);
     fputs("# THIS IS DEFAULT CONFIG FILE FOR litd #\n", fp);

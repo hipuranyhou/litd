@@ -23,22 +23,18 @@ void set_reload_config(int sig) {
 int main(int argc, char **argv) {
 
     CONFIG config;
-    config.daemon = 0;
-    config.verbose = 0;
-    config.poll = 400;
-    config.idle = 5000;
-    config.reset = 3600000;
+    init_config(&config);
     int err = 0;
-
-    // Process command line options
-    if (!process_options(argc, argv, &config)) {
-        fprintf(stderr, "Unknown option!\n");
-        return 1;
-    }
 
     // Check if we are not root
     if(!check_root()) {
         fprintf(stderr, "Running as root not allowed!\n");
+        return 1;
+    }
+
+    // Process command line options
+    if (!process_options(argc, argv, &config)) {
+        fprintf(stderr, "Unknown option!\n");
         return 1;
     }
 
