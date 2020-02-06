@@ -5,7 +5,7 @@ Daemon for automatic management of keyboard and display brightness using applesm
 
 When using litd, you take full responsibility for setting too large brightness values in [config file](https://github.com/Hipuranyhou/litd/blob/master/litd.conf) and possibly damaging your display or keyboard or both.
 
-Tested on Arch Linux (kernel 5.5.2-arch1-1)
+Tested on Arch Linux (kernel 5.5.2-arch1-1), MacBook Pro (Retina, 15-inch, Mid 2015) (MacBookPro11,4)
 
 [Installation guide](#installation-guide)
 
