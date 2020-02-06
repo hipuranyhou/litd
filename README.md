@@ -5,14 +5,14 @@ Daemon for automatic management of keyboard and display brightness using applesm
 
 When using litd, you take full responsibility for setting too large brightness values in [config file](https://github.com/Hipuranyhou/litd/blob/master/litd.conf) and possibly damaging your display or keyboard or both.
 
-Tested on Arch Linux (kernel 5.5.2-arch1-1), MacBook Pro (Retina, 15-inch, Mid 2015) (MacBookPro11,4)
+Tested on **Arch Linux (kernel 5.5.2-arch1-1)**, MacBook Pro (Retina, 15-inch, Mid 2015) **(MacBookPro11,4)**
 
 [Installation guide](#installation-guide)
 
 [Usage](#usage)
 
 ## Installation guide
-**litd has to run as you (to get user idle time properly)**
+**litd has to run as you (to get your idle time properly)**
 
 If your system is not systemd based, you need to figure the permissions and auto start sections by yourself.
 
@@ -73,24 +73,24 @@ $ systemctl --user enable --now litd.service
 
 
 ## Usage
-**litd has to run as you (to get user idle time properly)**
+**litd has to run as you (to get your idle time properly)**
 
 
 ### Flags
 
 `-d` to run in daemon mode (`litd.pid` file located at the same location as [config file](#config-file))
 ```Shell
-$ litd -d
+$ ./litd -d
 ```
 
 `-v` to run in verbose mode (not allowed in daemon mode)
 ```Shell
-$ litd -v
+$ ./litd -v
 ```
 
 
 ### Config file
-litd creates its config file (and .pid file in daemon mode) in directory `litd/` whose location is determined based on `$XDG_HOME_DIRS`. If this variable does not exist or is empty, then default path `$HOME/.config/` is used.
+litd creates its config file (and .pid file in daemon mode) in a directory named `litd/` whose location is determined based on `$XDG_HOME_DIRS`. If this variable does not exist or is empty, then default path `$HOME/.config/` is used.
 
 See [litd.conf](https://github.com/Hipuranyhou/litd/blob/master/litd.conf) file for more info.
 
