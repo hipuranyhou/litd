@@ -3,7 +3,7 @@
 
 Daemon for automatic management of keyboard and display brightness using applesmc light sensor (for Mac on Linux.)
 
-When using litd, you take full responsibility for settings too big brightness values in [config file](https://github.com/Hipuranyhou/litd/blob/master/litd.conf) and possibly damaging your display or keyboard.
+When using litd, you take full responsibility for setting too large brightness values in [config file](https://github.com/Hipuranyhou/litd/blob/master/litd.conf) and possibly damaging your display or keyboard or both.
 
 [Installation guide](#installation-guide)
 
