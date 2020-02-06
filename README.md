@@ -12,7 +12,7 @@ Tested on Arch Linux (kernel 5.5.2-arch1-1), MacBook Pro (Retina, 15-inch, Mid 2
 [Usage](#usage)
 
 ## Installation guide
-**litd cannot run as root (to get user idle time properly)**
+**litd has to run as you (to get user idle time properly)**
 
 If your system is not systemd based, you need to figure the permissions and auto start sections by yourself.
 
@@ -73,7 +73,7 @@ $ systemctl --user enable --now litd.service
 
 
 ## Usage
-**litd cannot run as root (to get user idle time properly)**
+**litd has to run as you (to get user idle time properly)**
 
 
 ### Flags
