@@ -78,7 +78,7 @@ $ systemctl --user enable --now litd.service
 
 ### Flags
 
-`-d` to run in daemon mode (`litd.pid` file located at the same location as [config file](#config-file))
+`-d` to run in daemon mode (`litd.pid` file is located at the same location as [config file](#config-file))
 ```Shell
 $ ./litd -d
 ```
