@@ -5,7 +5,7 @@ Description=Auto start litd on user login
 Type=oneshot
 RemainAfterExit=yes
 ExecStartPre=/usr/bin/sleep 5
-ExecStart=/home/hipuranyhou/Code/litd/bin/litd -d
+ExecStart=/path/to/litd -d
 
 [Install]
 WantedBy=default.target
